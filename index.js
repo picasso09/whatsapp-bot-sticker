@@ -75,40 +75,79 @@ client.on('message_create', async (msg) => {
       case '.sticker':
       case '.s':
       case '.tikel':
-        if(msg.hasMedia){
+        if (msg.hasMedia) {
           const media = await msg.downloadMedia();
-          chat.sendMessage(media,
-            {
+          chat.sendMessage(media, {
+            sendMediaAsSticker: true,
+            stickerName: 'github.com/picasso09',
+            stickerAuthor: `DVWORKSPACE-${jam}`,
+            quotedMessageId: msg.id._serialized // Reply to original message
+          });
+          console.log(`💬 ${contact.pushname} : Sticker sent!\n`);
+        }
+        else if (msg.hasQuotedMsg) {
+          const quotedMsg = await msg.getQuotedMessage();
+          if (quotedMsg.hasMedia && quotedMsg.type === 'image') {
+            const media = await quotedMsg.downloadMedia();
+            chat.sendMessage(media, {
               sendMediaAsSticker: true,
               stickerName: 'github.com/picasso09',
               stickerAuthor: `DVWORKSPACE-${jam}`,
-              quotedMessageId:msg.id._serialized // reply client
-            }
-          );
-          console.log(`💬 ${contact.pushname} : Sticker sent!\n`);
-        } else {
-          msg.reply('fotonya mana');
-        };
+              quotedMessageId: msg.id._serialized // Reply to original message
+            });
+            console.log(`💬 ${contact.pushname} : Sticker sent!\n`);
+          } else {
+            msg.reply('fotonya mana?');
+          }
+        }
+        else {
+          msg.reply('fotonya mana?');
+        }
         break;
-      case '.neofetch': // fitur neofetch
-        exec('neofetch --stdout', (error, stdout, stderr) => {
-          if (error) {
+
+      // Command untuk fitur neofetch;
+        case '.neofetch':
+    exec('neofetch --stdout', (error, stdout, stderr) => {
+        if (error) {
             console.error(`exec error: ${error}`);
-            chat.sendMessage(`Error executing neofetch: ${error.message}`);
+            msg.reply(`Error executing neofetch: ${error.message}`);
             return;
-          }
-          if (stderr) {
+        }
+        if (stderr) {
             console.error(`stderr: ${stderr}`);
-            chat.sendMessage(`Error: ${stderr}`);
+            msg.reply(`Error: ${stderr}`);
             return;
-          }
-          chat.sendMessage(`${stdout}`); // Mengirimkan hasil neofetch dengan format kode
-        });
+        }
+        msg.reply(`${stdout}`);
+    });
+    break;
+
+    case '.cpufetch':
+    exec('cpufetch', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`exec error: ${error}`);
+            msg.reply(`Error executing cpufetch: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`stderr: ${stderr}`);
+            msg.reply(`Error: ${stderr}`);
+            return;
+        }
+        msg.reply(`${stdout}`);
+    });
+    break;
+    case '.ping':
+        const startTime = Date.now(); // waktu pesan diterima
+        const response = await msg.reply('pinging...'); // membalas pesan terlebih dahulu
+        const endTime = Date.now(); // waktu setelah balasan dikirim
+        const latency = endTime - startTime; // menghitung latensi
+	await msg.reply(`damn latency: ${latency}ms`);
         break;
     }
   } catch (error) {
     console.error(error);
-  };
+  }
 });
 
 // Disconnected
