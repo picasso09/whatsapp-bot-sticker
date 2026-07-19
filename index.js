@@ -3,6 +3,7 @@ const { Boom } = require('@hapi/boom');
 const qrcode = require('qrcode-terminal');
 const Spinnies = require('spinnies');
 const moment = require('moment-timezone');
+const readline = require('readline');
 
 const { getMessageText, aboutClient } = require('./lib/helpers');
 const { loadCommands } = require('./commands');
@@ -13,8 +14,20 @@ moment.locale('id');
 const spinnies = new Spinnies();
 const commands = loadCommands();
 
+// USE_PAIRING_CODE=false kalau mau login pake QR
+// Nomor bisa diisi lewat env PAIRING_NUMBER, kalau kosong input di terminal
+const usePairingCode = process.env.USE_PAIRING_CODE !== 'false';
+
 console.log('Simple WhatsApp Bot Sticker by picasso09 (Baileys Edition)');
 console.log(`Loaded ${commands.size} command(s): ${[...commands.keys()].join(', ')}\n`);
+
+function askQuestion(query) {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise((resolve) => rl.question(query, (answer) => {
+    rl.close();
+    resolve(answer.trim());
+  }));
+}
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState('./auth');
@@ -24,6 +37,22 @@ async function startBot() {
     printQRInTerminal: false,
   });
 
+  // Kalau mode pairing code aktif dan belum pernah register, minta kode
+  // Nomor pakai format kode negara tanpa + atau 0 di depan,
+  // misal 62xxxxxxxxx.
+  if (usePairingCode && !sock.authState.creds.registered) {
+    let phoneNumber = process.env.PAIRING_NUMBER;
+    if (!phoneNumber) {
+      phoneNumber = await askQuestion('Masukkan nomor WhatsApp (format: 628xxxxxxxxx): ');
+    }
+
+    const code = await sock.requestPairingCode(phoneNumber.replace(/[^0-9]/g, ''));
+    // Pisahkan 4 karakter dengan strip
+    const finalcode = code.match(/.{1,4}/g)?.join('-') || code;
+    console.log(`\n[!] Pairing Code: ${finalcode}\n`);
+    console.log('Buka WhatsApp > Perangkat Tertaut > Tautkan dengan nomor telepon, lalu masukkan kode di atas.\n');
+  }
+
   spinnies.add('Connecting', { text: 'Opening WhatsApp Web' });
 
   sock.ev.on('creds.update', saveCreds);
@@ -31,7 +60,8 @@ async function startBot() {
   sock.ev.on('connection.update', (update) => {
     const { connection, lastDisconnect, qr } = update;
 
-    if (qr) {
+    // Login Handler / Auth
+    if (qr && !usePairingCode) {
       spinnies.add('generateQr', { text: 'Generating QR Code' });
       console.log('[!] Scan QR Code Bellow');
       qrcode.generate(qr, { small: true });

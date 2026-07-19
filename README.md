@@ -19,7 +19,13 @@ sudo apt update ; sudo apt install -y gconf-service libgbm-dev libasound2 libatk
 git clone https://github.com/DVWorkspaces/whatsapp-bot-sticker
 cd whatsapp-bot-sticker
 npm i
-node . / npm start // up to u
+node . / npm start | up to u
 ```
+## ⚙️ Configures `.env`
+
+| Variable | Value | Description |
+|---|---|---|
+| `USE_PAIRING_CODE` | false/true | default true
+| `PAIRING_NUMBER` | 628xxxxxxxx | ask in terminal if null
 
 ## If had an issues with this repo, please open issue.
