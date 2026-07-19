@@ -4,6 +4,7 @@ const qrcode = require('qrcode-terminal');
 const Spinnies = require('spinnies');
 const moment = require('moment-timezone');
 const readline = require('readline');
+const pino = require('pino');
 
 const { getMessageText, aboutClient } = require('./lib/helpers');
 const { loadCommands } = require('./commands');
@@ -34,6 +35,7 @@ async function startBot() {
 
   const sock = makeWASocket({
     auth: state,
+    logger: pino({ level: 'warn' }), // Pino Log level to shut up Baileys Log { info warn error silent }
     printQRInTerminal: false,
   });
 
