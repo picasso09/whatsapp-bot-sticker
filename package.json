@@ -37,7 +37,7 @@
     "wa-sticker-formatter": {
       "axios": "^1.6.8",
       "sharp": "^0.32.6",
-      "file-type": "^21.3.1"
+      "file-type": "16.5.4"
     }
   }
 }
