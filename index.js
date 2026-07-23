@@ -5,9 +5,10 @@ const Spinnies = require('spinnies');
 const moment = require('moment-timezone');
 const readline = require('readline');
 const pino = require('pino');
+require('dotenv').config();
 
 const { getMessageText, aboutClient } = require('./lib/helpers');
-const { loadCommands } = require('./commands');
+const { loadCommands, resolveCommand } = require('./commands');
 
 // atur moment ke indonesia
 moment.locale('id');
@@ -20,7 +21,7 @@ const commands = loadCommands();
 const usePairingCode = process.env.USE_PAIRING_CODE !== 'false';
 
 console.log('Simple WhatsApp Bot Sticker by picasso09 (Baileys Edition)');
-console.log(`Loaded ${commands.size} command(s): ${[...commands.keys()].join(', ')}\n`);
+console.log(`Loaded ${commands.length} command(s): ${commands.flatMap((c) => c.triggers).join(', ')}\n`);
 
 function askQuestion(query) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -99,11 +100,11 @@ async function startBot() {
 
     console.log(`💬 ${pushname} : ${body}\n`);
 
-    const handler = commands.get(body.toLowerCase());
-    if (!handler) return;
+    const resolved = resolveCommand(commands, body);
+    if (!resolved) return;
 
     try {
-      await handler(sock, msg, { from, body, pushname, jam });
+      await resolved.handler(sock, msg, { from, body, pushname, jam, args: resolved.args });
     } catch (error) {
       console.error(error);
     }

@@ -3,7 +3,7 @@ const path = require('path');
 
 // Handler commands
 function loadCommands() {
-  const map = new Map();
+  const list = [];
   const files = fs.readdirSync(__dirname).filter((f) => f !== 'index.js' && f.endsWith('.js'));
 
   for (const file of files) {
@@ -14,12 +14,31 @@ function loadCommands() {
       continue;
     }
 
+    list.push(command);
+  }
+
+  return list;
+}
+
+// Baca Pesan dari prefix dilanjutkan dengan argumen selanjutnya
+// .dl https://
+function resolveCommand(commandList, body) {
+  const lower = body.toLowerCase();
+
+  for (const command of commandList) {
     for (const trigger of command.triggers) {
-      map.set(trigger.toLowerCase(), command.handler);
+      const t = trigger.toLowerCase();
+
+      if (lower === t) {
+        return { handler: command.handler, args: '' };
+      }
+      if (lower.startsWith(`${t} `)) {
+        return { handler: command.handler, args: body.slice(trigger.length).trim() };
+      }
     }
   }
 
-  return map;
+  return null;
 }
 
-module.exports = { loadCommands };
+module.exports = { loadCommands, resolveCommand };
