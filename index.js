@@ -49,11 +49,14 @@ async function startBot() {
       phoneNumber = await askQuestion('Masukkan nomor WhatsApp (format: 628xxxxxxxxx): ');
     }
 
+    // Add Timeout, Before connecting to whatsapp
+    setTimeout(async () => {
     const code = await sock.requestPairingCode(phoneNumber.replace(/[^0-9]/g, ''));
     // Pisahkan 4 karakter dengan strip
     const finalcode = code.match(/.{1,4}/g)?.join('-') || code;
     console.log(`\n[!] Pairing Code: ${finalcode}\n`);
     console.log('Buka WhatsApp > Perangkat Tertaut > Tautkan dengan nomor telepon, lalu masukkan kode di atas.\n');
+    }, 5000);
   }
 
   spinnies.add('Connecting', { text: 'Opening WhatsApp Web' });
