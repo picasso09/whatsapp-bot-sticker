@@ -21,12 +21,18 @@ function loadCommands() {
 }
 
 // Baca Pesan dari prefix dilanjutkan dengan argumen selanjutnya
-// .dl https://
+// .dl https:// dengan regex
 function resolveCommand(commandList, body) {
   const lower = body.toLowerCase();
 
   for (const command of commandList) {
     for (const trigger of command.triggers) {
+        if (trigger instanceof RegExp) {
+        if (trigger.test(body)) {
+          return { handler: command.handler, args: body }; 
+        }
+        continue;
+      }
       const t = trigger.toLowerCase();
 
       if (lower === t) {

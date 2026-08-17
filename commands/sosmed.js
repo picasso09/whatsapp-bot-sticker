@@ -25,7 +25,7 @@ const FORMAT = 'bestvideo[ext=mp4][vcodec^=avc1]+bestaudio[ext=m4a]/best[ext=mp4
 
 module.exports = {
   // Wajib pakai prefix + link, contoh: ".dl https://youtu.be/xxxx"
-  triggers: ['.dl', '.download'],
+  triggers: ['.dl', '.download', URL_REGEX],
 
   async handler(sock, msg, ctx) {
     const { from, args } = ctx;
@@ -70,7 +70,8 @@ module.exports = {
         caption: 'Video berhasil diunduh.',
       }, { quoted: msg });
 
-      await sock.sendMessage(from, { edit: status.key });
+      // fix invalid media key
+      await sock.sendMessage(from, { delete: status.key });
     } catch (error) {
       console.error(error);
       await sock.sendMessage(from, {
