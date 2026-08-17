@@ -76,9 +76,26 @@ module.exports = {
       // fix invalid media key
       await sock.sendMessage(from, { delete: status.key });
     } catch (error) {
+      // Full Log error into terminal
       console.error(error);
+      // Cek apakah ada output stderr
+      if (error.stderr) {
+        // Split stderr
+        const lines = error.stderr.split('\n');
+        // Cari log mengandung kata "ERROR:"
+        const exactError = lines.find(line => line.includes('ERROR:'));
+        if (exactError) {
+          errorMessage = exactError.trim(); // Scrape sebaris ERROR:
+        } else {
+          errorMessage = error.stderr.trim(); // Scrape All stderr kalau tulisan ERROR: gk jumpa
+        }
+      } else if (error.message) {
+        // Fallback error from nodejs/baileys
+        errorMessage = error.message;
+      }
+      // Kirim pesan error sudah bersih ke WA
       await sock.sendMessage(from, {
-        text: `Error memproses media.\n${error.message}`,
+        text: `${errorMessage}`,
         edit: status.key,
       });
     } finally {
