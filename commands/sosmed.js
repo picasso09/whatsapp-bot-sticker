@@ -51,13 +51,16 @@ module.exports = {
         '--merge-output-format', 'mp4',
         '--restrict-filenames',
         '--no-playlist',
+        '--print', '%(title)s',
         '--print', 'after_move:filepath',
         '-o', outputTemplate,
         '--extractor-args', 'youtube:player_client=android',
         url,
       ], { maxBuffer: 1024 * 1024 * 50 });
 
-      filePath = stdout.trim().split('\n').pop();
+      const outputLines = stdout.trim().split('\n');
+      filePath = outputLines.pop();
+      const mediatitle = outputLines.join('\n').trim() || 'Berhasil diunduh';
 
       if (!filePath || !fs.existsSync(filePath)) {
         throw new Error('File hasil download tidak ditemukan');
@@ -67,7 +70,7 @@ module.exports = {
 
       await sock.sendMessage(from, {
         video: videoBuffer,
-        caption: 'Video berhasil diunduh.',
+        caption: `${mediatitle}\n`,
       }, { quoted: msg });
 
       // fix invalid media key
@@ -75,7 +78,7 @@ module.exports = {
     } catch (error) {
       console.error(error);
       await sock.sendMessage(from, {
-        text: `❌ Gagal memproses media.\nDetail: ${error.message}`,
+        text: `Error memproses media.\n${error.message}`,
         edit: status.key,
       });
     } finally {
