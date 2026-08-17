@@ -111,6 +111,7 @@ async function startBot() {
     }
 
     if (from === 'status@broadcast') return; // Skip read status Content Only See Main chat
+    if (from?.endsWith('@newsletter')) return; // Skip Read Channel Content ( Saluran )
     const body = getMessageText(msg);
     const pushname = msg.pushName || 'Unknown';
     const jam = moment().tz('Asia/Jakarta').format('dddd DD-MM-YYYY HH:mm:ss');
